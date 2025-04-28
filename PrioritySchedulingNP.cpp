@@ -1,88 +1,65 @@
-// Priority Scheduling
 #include <iostream>
-#include <algorithm>
+#include <climits>
 using namespace std;
 
-struct Process {
-    int pid;
-    int bt;
-    int priority;
-};
-
-bool compare(Process a, Process b) {
-    return (a.priority > b.priority);
-}
-
-void waitingTime(Process pro[], int n, int wt[]) {
-    wt[0] = 0; // First process has 0 waiting time
-    for (int i = 1; i < n; i++) {
-        wt[i] = pro[i - 1].bt + wt[i - 1];
-    }
-}
-
-void turnaroundTime(Process pro[], int n, int wt[], int tat[]) {
-    for (int i = 0; i < n; i++) {
-        tat[i] = pro[i].bt + wt[i];
-    }
-}
-
-void avgTime(Process pro[], int n) {
-    int wt[n], tat[n], total_wt = 0, total_tat = 0;
-
-    waitingTime(pro, n, wt);
-    turnaroundTime(pro, n, wt, tat);
-
-    cout << "\nProcess  " << "Priority  " << "Burst Time  "
-         << "Waiting Time  " << "Turnaround Time\n";
-
-    for (int i = 0; i < n; i++) {
-        cout << "  " << pro[i].pid << "\t    "
-             << pro[i].priority << "\t      "
-             << pro[i].bt << "\t\t"
-             << wt[i] << "\t\t"
-             << tat[i] << "\n";
-    }
-
-    for (int i = 0; i < n; i++) {
-        total_wt += wt[i];
-        total_tat += tat[i];
-    }
-
-    float WTaverage = (float)total_wt / n;
-    float TTaverage = (float)total_tat / n;
-
-    cout << "\nAverage waiting time = " << WTaverage;
-    cout << "\nAverage turn around time = " << TTaverage << endl;
-}
-
-void scheduling(Process pro[], int n) {
-    sort(pro, pro + n, compare);
-
-    cout << "\nOrder in which processes get executed:\n";
-    for (int i = 0; i < n; i++)
-        cout << pro[i].pid << " ";
-    cout << "\n";
-
-    avgTime(pro, n);
-}
+const int MAX = 10;  // Maximum number of processes
 
 int main() {
     int n;
-    cout << "Priority Scheduling Algorithm\n";
-    cout << "Enter the number of processes: ";
+    cout << "Enter number of processes: ";
     cin >> n;
 
-    Process pro[n];
+    int burst_time[MAX], remaining_time[MAX], arrival_time[MAX];
+    int completion_time[MAX], waiting_time[MAX], turnaround_time[MAX];
+    int current_time = 0;
+    int completed = 0;
 
+    // Input burst time and arrival time
     for (int i = 0; i < n; i++) {
-        cout << "\nEnter Process ID: ";
-        cin >> pro[i].pid;
-        cout << "Enter Priority: ";
-        cin >> pro[i].priority;
-        cout << "Enter Burst Time: ";
-        cin >> pro[i].bt;
+        cout << "Process " << i + 1 << " Burst Time: ";
+        cin >> burst_time[i];
+        remaining_time[i] = burst_time[i];  // Initialize remaining time
+        cout << "Process " << i + 1 << " Arrival Time: ";
+        cin >> arrival_time[i];
     }
 
-    scheduling(pro, n);
+    // Shortest Remaining Job Scheduling
+    while (completed < n) {
+        int min_remaining_time = INT_MAX;
+        int selected_process = -1;
+
+        // Find process with shortest remaining time that has arrived
+        for (int i = 0; i < n; i++) {
+            if (remaining_time[i] > 0 && arrival_time[i] <= current_time && remaining_time[i] < min_remaining_time) {
+                min_remaining_time = remaining_time[i];
+                selected_process = i;
+            }
+        }
+
+        if (selected_process != -1) {
+            // Execute the selected process for one time unit
+            remaining_time[selected_process]--;
+            current_time++;
+
+            // If the process has completed
+            if (remaining_time[selected_process] == 0) {
+                completion_time[selected_process] = current_time;
+                turnaround_time[selected_process] = completion_time[selected_process] - arrival_time[selected_process];
+                waiting_time[selected_process] = turnaround_time[selected_process] - burst_time[selected_process];
+                completed++;
+            }
+        } else {
+            // If no process is ready to execute, increment time
+            current_time++;
+        }
+    }
+
+    // Display Results
+    cout << "\nProcess\tBurst Time\tArrival Time\tCompletion Time\tTurnaround Time\tWaiting Time\n";
+    for (int i = 0; i < n; i++) {
+        cout << i + 1 << "\t" << burst_time[i] << "\t\t" << arrival_time[i] << "\t\t" 
+             << completion_time[i] << "\t\t" << turnaround_time[i] << "\t\t" << waiting_time[i] << endl;
+    }
+
     return 0;
 }
