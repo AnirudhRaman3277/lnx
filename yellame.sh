@@ -148,3 +148,19 @@ case $month in
     6|7|8) echo "Summer" ;;
     9|10|11) echo "Autumn" ;;
 esac
+
+
+# ===== Experiment 8
+rows=8
+columns=8
+for ((row = 1; row <= $rows; row++)); do
+    for ((col = 1; col <= $columns; col++)); do
+        total=$((row + col))
+        if ((total % 2 == 0)); then
+            echo -n -e "\e[47m \e[0m"
+        else
+            echo -n -e "\e[48m \e[0m"
+        fi
+    done
+    echo
+done
